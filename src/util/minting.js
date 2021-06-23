@@ -38,8 +38,11 @@ export const connectWallet = async () => {
       status: (
         <span>
           <p>
-          You must install <a target="_blank" href={`https://metamask.io/download.html`}>Metamask</a>, a virtual Ethereum wallet, in your
-              browser.
+            You must install{" "}
+            <a target="_blank" href={`https://metamask.io/download.html`}>
+              Metamask
+            </a>
+            , a virtual Ethereum wallet, in your browser.
           </p>
         </span>
       ),
@@ -80,8 +83,11 @@ export const getCurrentWalletConnected = async () => {
       status: (
         <span>
           <p>
-              You must install <a target="_blank" href={`https://metamask.io/download.html`}>Metamask</a>, a virtual Ethereum wallet, in your
-              browser.
+            You must install{" "}
+            <a target="_blank" href={`https://metamask.io/download.html`}>
+              Metamask
+            </a>
+            , a virtual Ethereum wallet, in your browser.
           </p>
         </span>
       ),
@@ -90,12 +96,12 @@ export const getCurrentWalletConnected = async () => {
 };
 
 export const mintNFT = async (file, name, description, address) => {
-  
- if (!window.ethereum || !window.ethereum.selectedAddress) {
+  if (!window.ethereum || !window.ethereum.selectedAddress) {
     return {
       txnAddress: "",
       success: false,
-      status: "Connect your Metamask wallet (see top right button) to mint an NFT.",
+      status:
+        "Connect your Metamask wallet (see top right button) to mint an NFT.",
     };
   }
 
@@ -106,7 +112,6 @@ export const mintNFT = async (file, name, description, address) => {
       status: "Please make sure all fields are completed before minting.",
     };
   }
-
 
   const pinataFileResponse = await pinFileToIPFS(file);
   if (!pinataFileResponse.success) {
@@ -164,7 +169,92 @@ export const mintNFT = async (file, name, description, address) => {
   }
 };
 
-export const loadNFT = async (id) => {
-  const metadata = await minterContract.methods.tokenURI(id).call();
-  return metadata;
+export const getNFTTransaction = async (txHash) => {
+  try {
+    const transaction = await web3.eth.getTransaction(txHash);
+    if (!transaction) {
+      return {
+        state: "dropped",
+        title: "🥺 This transaction does not exist.",
+        status: (
+          <p style={{ lineHeight: "24px" }}>
+            It may have been dropped or is invalid. Try minting your own NFT
+            using the{" "}
+            <a
+              style={{ fontWeight: "400", color: "black", fontSize: "16px" }}
+              href="http://localhost:3000"
+            >
+              Alchemy NFT Minter
+            </a>
+            .
+          </p>
+        ),
+        showSpinner: false,
+        showLoading: true,
+      };
+    } else if (!transaction.blockNumber) {
+      const link = "https://ropsten.etherscan.io/tx/" + txHash;
+      return {
+        state: "pending",
+        title: "⏳ Your transaction is being mined...",
+        status: (
+          <p>
+            Check{" "}
+            <a
+              style={{ fontWeight: "400", color: "black", fontSize: "16px" }}
+              href={link}
+            >
+              Etherscan
+            </a>{" "}
+            for the status of your transaction.
+          </p>
+        ),
+        showSpinner: true,
+        showLoading: true,
+      };
+    } else {
+      //mined
+      return {
+        state: "mined",
+        title: "Loading...",
+        status: "",
+        showSpinner: true,
+        showLoading: true,
+      };
+    }
+  } catch (err) {
+    return {
+      state: "dropped",
+      title: "Something went wrong...",
+      status: err.message,
+      showSpinner: false,
+      showLoading: true,
+    };
+  }
+};
+
+export const loadNFT = async (txHash) => {
+  try {
+    const receipt = await web3.eth.getTransactionReceipt(txHash);
+    const tkID = parseInt(receipt.logs[0].topics[3], 16);
+
+    const owner = receipt.from;
+    const link = await minterContract.methods.tokenURI(tkID).call();
+    let response = await fetch(link);
+
+    let { name, image, description } = await response.json();
+    return {
+      name: name,
+      description: description,
+      owner: owner,
+      image: image,
+    };
+  } catch (err) {
+    return {
+      name: "error",
+      description: err.description,
+      owner: "bad",
+      image: null,
+    };
+  }
 };

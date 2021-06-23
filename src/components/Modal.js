@@ -62,7 +62,7 @@ const Modal = ({
           <center><img className="tweetImage" src={image}></img></center>
 
             <p className="tweetText">
-              I just made an #NFT using @AlchemyPlatform's Minter! Check it out: <a href={viewLink} style={{wordBreak: "break-all"}}>{viewLink}</a>
+              I just made an #NFT using @AlchemyPlatform's Minter! Check it out: <a href={viewLink} style={{wordBreak: "break-all", color:"#212122"}}>{viewLink}</a>
             </p>
 
           </div>

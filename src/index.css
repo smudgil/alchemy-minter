@@ -425,9 +425,10 @@ input:focus {
   text-decoration: none;
 }
 
+/*
 a :visited {
   color: var(--core-blue);
-}
+} */
 
 .rightLinks a :focus {
   color: white;

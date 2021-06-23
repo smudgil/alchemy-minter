@@ -1,15 +1,12 @@
 import "./App.css";
 
-import Minter from "./components/Minter";
 import Navbar from "./components/Navbar";
 import Error from "./components/Error";
-import HowWorks from "./components/HowWorks";
-import LikeThis from "./components/LikeThis";
-import GreenLayer from "./components/GreenLayer";
-import NFTPreview from "./components/NFTPreview";
+import NFTView from "./components/NFTView";
+import MinterView from "./components/MinterView";
+
 import { useEffect, useState, useCallback } from "react";
 
-import Loading from "./components/Loading";
 
 function App() {
   //parse query parameters
@@ -23,13 +20,6 @@ function App() {
   const closeErrorModal = useCallback(() => setErrorModal(false), []);
   const [errorStatus, setErrorStatus] = useState("");
 
-  //for loading modal
-  const [isLoadingShowing, setLoadingModal] = useState(false);
-  const [showLoadingSpinner, setLoadingSpinner] = useState(false);
-
-
-  const [loadingStatus, setLoadingStatus] = useState("");
-  const [loadingTitle, setLoadingTitle] = useState("");
 
   function getQueryParams() {
     //TODO: ask dphil about input error in nft preview
@@ -42,55 +32,28 @@ function App() {
     }
   }
 
+
+  //each page have it's own loading and error; don't want connect wallet but to have state
+  //stateless, component gets the same props, returns the same thing (stateful, is opposite bc multiple thigns could be going on, could give the same props, get dif outcomes) 
   useEffect(async () => {
     getQueryParams();
   }, [previewNFT]);
 
-  const setLoadingProps = {
-    setLoadingStatus,
-    setLoadingModal,
-    setLoadingTitle,
-    setLoadingSpinner,
-  }
-
   return (
     <div className="App">
-      <Loading
-        status={loadingStatus}
-        showModal={isLoadingShowing}
-        title={loadingTitle}
-        loadingSpinner={showLoadingSpinner}
-      ></Loading>
+     
       <Error
         status={errorStatus}
         showModal={isErrorModalShowing}
         closeModal={closeErrorModal}
       ></Error>
-      <Navbar></Navbar>
 
       {previewNFT && txHash ? (
-        <NFTPreview
-          txHash={txHash}
-          {...setLoadingProps}
-        ></NFTPreview>
+        <NFTView
+         txHash={txHash}
+        ></NFTView>
       ) : (
-        <div>
-          <GreenLayer
-            setErrorStatus={setErrorStatus}
-            setErrorModal={setErrorModal}
-          ></GreenLayer>
-          <div className="contentContainer">
-            <Minter
-              setErrorStatus={setErrorStatus}
-              setErrorModal={setErrorModal}
-              {...setLoadingProps}
-            ></Minter>
-            <div >
-              <HowWorks></HowWorks>
-              <LikeThis></LikeThis>
-            </div>
-          </div>{" "}
-        </div>
+        <MinterView></MinterView>
       )}
           <p style={{fontSize:"12px"}}>Made with 💖 by HSS</p>
 
